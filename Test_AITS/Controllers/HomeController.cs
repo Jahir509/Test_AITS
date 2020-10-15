@@ -150,7 +150,7 @@ namespace Test_AITS.Controllers
         }
 
 
-        public JsonResult GetDealerInfo(string code)
+        public JsonResult GetDealerInfo(int code)
         {
             var data = db.DealerInfos.Where(c => c.DealerId == Convert.ToInt32(code));
             if(data!=null)
