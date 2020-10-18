@@ -1,0 +1,297 @@
+﻿@using Test_AITS.Models;
+@model dynamic
+@{
+    ViewData["Title"] = "Search";
+}
+<div class="row">
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="basiaddon3">Search Results By Criteria</span>
+        </div>
+        <div class="input-group-append">
+            <button class="btn btn-outline-info" type="button" data-toggle="modal" data-target="#myModal">Search</button>
+        </div>
+    </div>
+    <!-- The Modal -->
+    <div class="modal fade" id="myModal">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h4 class="modal-title">Search</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <!-- Modal body -->
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-toggle="tab" href="#home">Search By Date</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#menu1">Search By Code</a>
+                        </li>
+                    </ul>
+                    <!-- Tab panes -->
+                    <div class="tab-content">
+                        <div id="home" class="container tab-pane active">
+                            <br>
+                            <form asp-action="SearchCommissionResulByDate" method="post">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">From : </span>
+                                    </div>
+                                    <input type="date" class="form-control" id="fromDate" name="fromDate" data-toggle="tooltip" title="From Date" data-placement="bottom">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">To : </span>
+                                    </div>
+                                    <input type="date" class="form-control" id="toDate" name="toDate" data-toggle="tooltip" title="To Date" data-placement="bottom">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-success" type="submit" id="">Search</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div id="menu1" class="container tab-pane fade">
+                            <br>
+                            <form asp-action="SearchCommissionResulByDealerCode" method="post">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">Employee Code </span>
+                                    </div>
+                                    <input type="text" class="form-control" placeholder="Ex. E-XXXX/AL-XXXX/BL-XXXX" id="employeeCode" name="employeeCode" oninput="this.value = this.value.toUpperCase()">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-success" type="submit" id="">Search</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- Modal footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12">
+        @{
+            if (TempData["empCode"] != null)
+            {
+                <h4>Search Results for @TempData["empCode"]</h4>
+            }
+            else if (TempData["fromDate"] != null && TempData["toDate"] != null)
+            {
+                <h4>Search Results from Date: @TempData["fromDate"] to Date: @TempData["toDate"]</h4>
+            }
+            else
+            {
+                <h4>Search Results for all dealer</h4>
+            }
+        }
+        <table id="example" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Code</th>
+                    <th>Date</th>
+                    <th>Sell<br />Amount</th>
+                    <th>Sales<br />Commission</th>
+                    <th>Inbound<br />Commission</th>
+                    <th>Outbound<br />Commission</th>
+                    <th>Ordinal<br />Commission</th>
+                    <th>GB<br />Commission</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{int i = 1;}
+                @foreach (Sale dealer in Model.Report)
+                {
+                    <tr>
+                        <td>@i</td>
+                        @{ i++;}
+                        <td>@dealer.DealerCode</td>
+                        <td>@dealer.Date.ToString("dd MMM yyyy")</td>
+                        <td>@dealer.SellAmount</td>
+                        <td>@dealer.SalesCommission</td>
+                        <td>@dealer.InboundCommission</td>
+                        <td>@dealer.OutboundCommission</td>
+                        <td>@dealer.OrdinalCommission</td>
+                        <td>@dealer.GBCommission</td>
+                        @{
+                            int totalCommission = (dealer.SalesCommission + dealer.InboundCommission + dealer.OutboundCommission + dealer.OrdinalCommission + dealer.GBCommission);
+                        }
+                        <td>@totalCommission</td>
+                    </tr>
+                }
+            <tr>
+                <th colspan="3">Total</th>
+                <td>@Model.totalSell</td>
+                <td>@Model.TotalSalesCommission</td>
+                <td>@Model.TotalInBoundCommission</td>
+                <td>@Model.TotalOutBoundCommission</td>
+                <td>@Model.TotalOrdinalCommission</td>
+                <td>@Model.TotalGBCommission</td>
+                <td>@Model.totalSumCommission</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    @* <div class="col-lg-4">
+            <div id="formDiv">
+                <h2>Member Registration</h2>
+                <span class="text-danger">@TempData["message"]</span>
+                <br>
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#home">New Member</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#menu1">Existing Member</a>
+                    </li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div id="home" class="container tab-pane active">
+                        <br>
+                        <form asp-action="Create" method="post">
+                            <div class="form-group">
+                                <label for="name">Name:</label>
+                                <input type="text" class="form-control" id="name" placeholder="Enter name" name="name">
+                            </div>
+                            <div class="form-group">
+                                <label for="dealerType">Dealer Type:</label>
+                                <select class="form-control" name="dealerTypeId" id="dealerTypeId" required>
+                                    <option value="">Select DealerType..</option>
+
+                                    @foreach (DealerType dealerType in Model.dealerTypes)
+                                    {
+                                        <option value="@dealerType.Id">@dealerType.Name</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="dealerType">Company:</label>
+                                <select class="form-control" name="companyId" id="companyId" required>
+                                    <option value="">Select Company ..</option>
+
+                                    @foreach (Company company in Model.companies)
+                                    {
+                                        <option value="@company.Id">@company.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="dealerType">Thana:</label>
+                                <select class="form-control" name="thanaId" id="thanaId" required>
+                                    <option value="">Select Thana ..</option>
+
+                                    @foreach (Thana thana in Model.thanas)
+                                    {
+                                        <option value="@thana.Id">@thana.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                    <div id="menu1" class="container tab-pane fade">
+                        <br>
+                        <form asp-action="CreateExistingMember" method="post">
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" name="dCode" id="dCode" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2" required>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-success" type="button" id="searchDealer">Search</button>
+                                </div>
+                            </div>
+                            <input type="text" class="form-control" id="dId" name="dId" style="display:none">
+                            <div class="form-group">
+                                <label for="dname">Member Name:</label>
+                                <input type="text" class="form-control" id="dname" name="dname" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="dType">Dealer Type:</label>
+                                <select class="form-control" name="dTypeId" id="dTypeId" required>
+                                    <option value="">Select DealerType..</option>
+
+                                    @foreach (DealerType dealerType in Model.dealerTypes)
+                                    {
+                                        <option value="@dealerType.Id">@dealerType.Name</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="company">Company:</label>
+                                <select class="form-control" name="cId" id="cId" required>
+                                    <option value="">Select Company ..</option>
+
+                                    @foreach (Company company in Model.companies)
+                                    {
+                                        <option value="@company.Id">@company.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="thana">Thana:</label>
+                                <select class="form-control" name="tId" id="tId" required>
+                                    <option value="">Select Thana ..</option>
+
+                                    @foreach (Thana thana in Model.thanas)
+                                    {
+                                        <option value="@thana.Id">@thana.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div id="infoDiv" style="display:none">
+                <div class="row text-right">
+                    <button id="close" class="btn btn-md btn-danger">X</button>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <form asp-action="Sell" method="post">
+                            <input type="text" name="dealerId" id="dealerId" style="display:none" />
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroup-sizing-default">Dealer Code</span>
+                                </div>
+                                <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" id="dealerCode" name="dealerCode" readonly>
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroup-sizing-default">Dealer Name</span>
+                                </div>
+                                <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" id="dealerName" name="dealerName" readonly>
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroup-sizing-default">Date</span>
+                                </div>
+                                <input type="date" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" id="date" name="date">
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroup-sizing-default">Sell Amount</span>
+                                </div>
+                                <input type="number" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" id="sellAmount" name="sellAmount">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    *@
+
+</div>
+
+

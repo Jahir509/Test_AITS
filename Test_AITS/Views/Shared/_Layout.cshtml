@@ -24,7 +24,7 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Search">Search</a>
                         </li>
                     </ul>
                 </div>
@@ -51,7 +51,13 @@
     <script src="https://cdn.datatables.net/responsive/2.2.6/js/responsive.bootstrap4.min.js"></script>
     <script>
         $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
             $('#example').DataTable();
+
             //
             $(".getinfo").click(function () {
                 var dealerData = $(this).data('id');
@@ -63,14 +69,14 @@
                 $("#dealerId").val(dealerInfo[2]);
 
             });
-           //
+            //
             $("#close").click(function () {
                 $("#formDiv").show();
                 $("#infoDiv").hide();
             });
             //
             $("#searchDealer").click(function () {
-                var dCode = 13;
+                var dCode = $("#dCode").val();
                 var params = { code: dCode };
                 $.ajax({
                     url: "/Home/GetDealerInfo",
@@ -78,9 +84,9 @@
                     data: params,
                     success: function (rData) {
                         if (rData != undefined && rData != null && rData != "") {
-                            
-                            alert(rData);
-                            
+                            clearForm();
+                            $("#dId").val(rData[0].dealerId);
+                            $("#dname").val(rData[0].dealer.name);
                         }
                     }
 
@@ -89,9 +95,6 @@
                 function clearForm() {
                     $("#dId").val('');
                     $("#dname").val('');
-                    $("#dTypeId").val('');
-                    $("#cId").val('');
-                    $("#tId").val('');
                 }
             })
         });

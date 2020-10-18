@@ -10,11 +10,12 @@ namespace Test_AITS.Models
         public int Id { get; set; }
         public string DealerCode { get; set; }
         public int SellAmount { get; set; }
-        public string Date { get; set; }
+        public DateTime Date { get; set; }
         public int SalesCommission { get; set; }
         public int InboundCommission { get; set; }
         public int OutboundCommission { get; set; }
         public int OrdinalCommission { get; set; }
+        public int GBCommission { get; set; }
 
     }
 }

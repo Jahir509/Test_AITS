@@ -4,13 +4,82 @@
     ViewData["Title"] = "Home Page";
 }
 
-<h2>Stacked form</h2>
-
 <div class="row">
     <div class="col-lg-8">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basiaddon3">Search Results By Criteria</span>
+            </div>
+            <div class="input-group-append">
+                <button class="btn btn-outline-info" type="button" data-toggle="modal" data-target="#myModal">Search</button>
+            </div>
+        </div>
+        <!-- The Modal -->
+        <div class="modal fade" id="myModal">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Search</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-toggle="tab" href="#searchByDate">Search By Date</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#searchByCode">Search By Code</a>
+                            </li>
+                        </ul>
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                            <div id="searchByDate" class="container tab-pane active">
+                                <br>
+                                <form asp-action="SearchCommissionResulByDate" method="post">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">From : </span>
+                                        </div>
+                                        <input type="date" class="form-control" id="fromDate" name="fromDate" data-toggle="tooltip" title="From Date" data-placement="bottom">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">To : </span>
+                                        </div>
+                                        <input type="date" class="form-control" id="toDate" name="toDate" data-toggle="tooltip" title="To Date" data-placement="bottom">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-success" type="submit" id="">Search</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div id="searchByCode" class="container tab-pane fade">
+                                <br>
+                                <form asp-action="SearchCommissionResulByDealerCode" method="post">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Employee Code </span>
+                                        </div>
+                                        <input type="text" class="form-control" placeholder="Ex. E-XXXX/AL-XXXX/BL-XXXX" id="employeeCode" name="employeeCode" oninput="this.value = this.value.toUpperCase()">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-success" type="submit" id="">Search</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <table id="example" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
             <thead>
                 <tr>
+                    <th>#</th>
                     <th>Code</th>
                     <th>Name</th>
                     <th>Company</th>
@@ -20,139 +89,148 @@
                 </tr>
             </thead>
             <tbody>
+                @{int i = 1;}
                 @foreach (DealerInfo dealerInfo in Model.dealerInfos)
                 {
                     <tr>
+                        <td>@i</td>
+                        @{ i++;}
                         <td>@dealerInfo.DealerCode</td>
                         <td>@dealerInfo.Dealer.Name</td>
                         <td>@dealerInfo.Dealer.Company.Name</td>
                         <td>@dealerInfo.Dealer.Thana.Name</td>
                         <td>@dealerInfo.SellAmount</td>
-                        <td><button data-id="@dealerInfo.DealerCode+@dealerInfo.Dealer.Name+@dealerInfo.Dealer.Id" class="btn btn-md btn-info getinfo">Details</button></td>
+                        <td><button data-id="@dealerInfo.DealerCode+@dealerInfo.Dealer.Name+@dealerInfo.Dealer.Id" class="btn btn-md btn-info getinfo">Sell</button></td>
                     </tr>
                 }
+                
             </tbody>
         </table>
     </div>
     <div class="col-lg-4">
         <div id="formDiv">
-            <div class="container mt-3">
-                <h2>Member Registration</h2>
-                <br>
-                <!-- Nav tabs -->
-                <ul class="nav nav-tabs">
-                    <li class="nav-item">
-                        <a class="nav-link active" data-toggle="tab" href="#home">New Member</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#menu1">Existing Member</a>
-                    </li>
-                </ul>
+            <h2>Member Registration</h2>
+            <span class="text-danger">@TempData["message"]</span>
+            <br>
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#newMember">New Member</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#oldMember">Existing Member</a>
+                </li>
+            </ul>
 
-                <!-- Tab panes -->
-                <div class="tab-content">
-                    <div id="home" class="container tab-pane active">
-                        <br>
-                        <form asp-action="Create" method="post">
-                            <div class="form-group">
-                                <label for="name">Name:</label>
-                                <input type="text" class="form-control" id="name" placeholder="Enter name" name="name">
-                            </div>
-                            <div class="form-group">
-                                <label for="dealerType">Dealer Type:</label>
-                                <select class="form-control" name="dealerTypeId" id="dealerTypeId" required>
-                                    <option value="">Select DealerType..</option>
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div id="newMember" class="container tab-pane active">
+                    <br>
+                    <form asp-action="Create" method="post">
+                        <div class="form-group">
+                            <label for="name">Name:</label>
+                            <input type="text" class="form-control" id="name" placeholder="Enter name" name="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="dealerType">Dealer Type:</label>
+                            <select class="form-control" name="dealerTypeId" id="dealerTypeId" required>
+                                <option value="">Select DealerType..</option>
 
-                                    @foreach (DealerType dealerType in Model.dealerTypes)
-                                    {
-                                        <option value="@dealerType.Id">@dealerType.Name</option>
-                                    }
-                                </select>
-                            </div>
+                                @foreach (DealerType dealerType in Model.dealerTypes)
+                                {
+                                    <option value="@dealerType.Id">@dealerType.Name</option>
+                                }
+                            </select>
+                        </div>
 
-                            <div class="form-group">
-                                <label for="dealerType">Company:</label>
-                                <select class="form-control" name="companyId" id="companyId" required>
-                                    <option value="">Select Company ..</option>
+                        <div class="form-group">
+                            <label for="dealerType">Company:</label>
+                            <select class="form-control" name="companyId" id="companyId" required>
+                                <option value="">Select Company ..</option>
 
-                                    @foreach (Company company in Model.companies)
-                                    {
-                                        <option value="@company.Id">@company.Name</option>
-                                    }
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="dealerType">Thana:</label>
-                                <select class="form-control" name="thanaId" id="thanaId" required>
-                                    <option value="">Select Thana ..</option>
+                                @foreach (Company company in Model.companies)
+                                {
+                                    <option value="@company.Id">@company.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dealerType">Thana:</label>
+                            <select class="form-control" name="thanaId" id="thanaId" required>
+                                <option value="">Select Thana ..</option>
 
-                                    @foreach (Thana thana in Model.thanas)
-                                    {
-                                        <option value="@thana.Id">@thana.Name</option>
-                                    }
-                                </select>
+                                @foreach (Thana thana in Model.thanas)
+                                {
+                                    <option value="@thana.Id">@thana.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </form>
+                </div>
+                <div id="oldMember" class="container tab-pane fade">
+                    <br>
+                    <form asp-action="CreateExistingMember" method="post">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" name="dCode" id="dCode" placeholder="Enter Employee Code " aria-label="Recipient's username" aria-describedby="button-addon2" oninput="this.value = this.value.toUpperCase()">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-success" type="button" id="searchDealer">Search</button>
                             </div>
-                            <button type="submit" class="btn btn-primary">Submit</button>
-                        </form>
-                    </div>
-                    <div id="menu1" class="container tab-pane fade">
-                        <br>
-                        <form asp-action="CreateExistingMember" method="post">
-                            <div class="input-group mb-3">
-                                <input type="text" class="form-control" name="dCode" id="dCode" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2" required>
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-success" type="button" id="searchDealer">Search</button>
-                                </div>
-                            </div>
-                            <input type="text" class="form-control" id="dId" name="dId" style="display:none">
-                            <div class="form-group">
-                                <label for="dname">Member Name:</label>
-                                <input type="text" class="form-control" id="dname" name="dname" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label for="dType">Dealer Type:</label>
-                                <select class="form-control" name="dTypeId" id="dTypeId" required>
-                                    <option value="">Select DealerType..</option>
+                        </div>
+                        <input type="text" class="form-control" id="dId" name="dId" style="display:none">
+                        <div class="form-group">
+                            <label for="dname">Member Name:</label>
+                            <input type="text" class="form-control" id="dname" name="dname" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="dType">Dealer Type:</label>
+                            <select class="form-control" name="dTypeId" id="dTypeId" required>
+                                <option value="">Select DealerType..</option>
 
-                                    @foreach (DealerType dealerType in Model.dealerTypes)
-                                    {
-                                        <option value="@dealerType.Id">@dealerType.Name</option>
-                                    }
-                                </select>
-                            </div>
+                                @foreach (DealerType dealerType in Model.dealerTypes)
+                                {
+                                    <option value="@dealerType.Id">@dealerType.Name</option>
+                                }
+                            </select>
+                        </div>
 
-                            <div class="form-group">
-                                <label for="company">Company:</label>
-                                <select class="form-control" name="cId" id="cId" required>
-                                    <option value="">Select Company ..</option>
+                        <div class="form-group">
+                            <label for="company">Company:</label>
+                            <select class="form-control" name="cId" id="cId" required>
+                                <option value="">Select Company ..</option>
 
-                                    @foreach (Company company in Model.companies)
-                                    {
-                                        <option value="@company.Id">@company.Name</option>
-                                    }
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="thana">Thana:</label>
-                                <select class="form-control" name="tId" id="tId" required>
-                                    <option value="">Select Thana ..</option>
+                                @foreach (Company company in Model.companies)
+                                {
+                                    <option value="@company.Id">@company.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="thana">Thana:</label>
+                            <select class="form-control" name="tId" id="tId" required>
+                                <option value="">Select Thana ..</option>
 
-                                    @foreach (Thana thana in Model.thanas)
-                                    {
-                                        <option value="@thana.Id">@thana.Name</option>
-                                    }
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Create</button>
-                        </form>
-                    </div>
+                                @foreach (Thana thana in Model.thanas)
+                                {
+                                    <option value="@thana.Id">@thana.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </form>
                 </div>
             </div>
         </div>
         <div id="infoDiv" style="display:none">
-            <div class="row text-right">
-                <button id="close" class="btn btn-md btn-danger">X</button>
+            <div class="input-group mb-3">
+                <div class="input-group-append">
+                    <span class="input-group-text" id="basiaddon2">Sell Tab</span>
+                </div>
+                <div class="input-group-prepend">
+                    <button id="close" class="btn btn-md btn-danger">X</button>
+                </div>
             </div>
+           
             <div class="row">
                 <div class="col-12">
                     <form asp-action="Sell" method="post">

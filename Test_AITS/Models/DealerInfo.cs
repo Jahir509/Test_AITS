@@ -15,6 +15,7 @@ namespace Test_AITS.Models
         public int OrdinalCommission { get; set; }
         public int InboundCommission { get; set; }
         public int OutboundCommission { get; set; }
+        public int GBCommission { get; set; }
         public Dealer Dealer { get; set; }
     }
 }
