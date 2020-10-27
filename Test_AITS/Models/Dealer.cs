@@ -12,7 +12,7 @@ namespace Test_AITS.Models
         public int CompanyId { get; set; }
         public int DealerTypeId { get; set; }
         public int ThanaId { get; set; }
-
+        public string Designation { get; set; }
         public int IsSIDC { get; set; }
         public int IsAMC { get; set; }
         public int IsBMC { get; set; }

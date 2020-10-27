@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Test_AITS.Database;
 
 namespace Test_AITS.Migrations
 {
     [DbContext(typeof(AITSDBContext))]
-    partial class AITSDBContextModelSnapshot : ModelSnapshot
+    [Migration("20201027035338_AssociationCommission_Table_added")]
+    partial class AssociationCommission_Table_added
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,6 +44,8 @@ namespace Test_AITS.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SaleId");
 
                     b.ToTable("AssociationCommissions");
                 });
@@ -433,6 +437,15 @@ namespace Test_AITS.Migrations
                             Id = 1,
                             Name = "Thana-A"
                         });
+                });
+
+            modelBuilder.Entity("Test_AITS.Models.AssociationCommission", b =>
+                {
+                    b.HasOne("Test_AITS.Models.Sale", "Sale")
+                        .WithMany()
+                        .HasForeignKey("SaleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Test_AITS.Models.Dealer", b =>

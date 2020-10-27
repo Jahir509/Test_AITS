@@ -10,8 +10,8 @@ using Test_AITS.Database;
 namespace Test_AITS.Migrations
 {
     [DbContext(typeof(AITSDBContext))]
-    [Migration("20201017142058_ALter_table_Sales_Date")]
-    partial class ALter_table_Sales_Date
+    [Migration("20201027125848_AssociationCommission_Table_altered")]
+    partial class AssociationCommission_Table_altered
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -20,6 +20,33 @@ namespace Test_AITS.Migrations
                 .HasAnnotation("ProductVersion", "3.1.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("Test_AITS.Models.AssociationCommission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CommissionType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GoesTo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SaleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AssociationCommissions");
+                });
 
             modelBuilder.Entity("Test_AITS.Models.Commission", b =>
                 {
@@ -43,6 +70,64 @@ namespace Test_AITS.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Commissions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            FromAmount = 1000,
+                            Percentage = 6f,
+                            ToAmount = 10000,
+                            Type = "SIDC"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            FromAmount = 10000,
+                            Percentage = 7.5f,
+                            ToAmount = 30000,
+                            Type = "SIDC"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            FromAmount = 30000,
+                            Percentage = 9f,
+                            ToAmount = 60000,
+                            Type = "SIDC"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            FromAmount = 60000,
+                            Percentage = 11f,
+                            ToAmount = 999999,
+                            Type = "SIDC"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            FromAmount = 5000,
+                            Percentage = 5f,
+                            ToAmount = 50000,
+                            Type = "AMC"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            FromAmount = 50000,
+                            Percentage = 7f,
+                            ToAmount = 999999,
+                            Type = "AMC"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            FromAmount = 5000,
+                            Percentage = 5f,
+                            ToAmount = 999999,
+                            Type = "BMC"
+                        });
                 });
 
             modelBuilder.Entity("Test_AITS.Models.Company", b =>
@@ -58,6 +143,13 @@ namespace Test_AITS.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Companies");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Walton"
+                        });
                 });
 
             modelBuilder.Entity("Test_AITS.Models.Dealer", b =>
@@ -72,6 +164,9 @@ namespace Test_AITS.Migrations
 
                     b.Property<int>("DealerTypeId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Designation")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("IsAMC")
                         .HasColumnType("int");
@@ -97,6 +192,19 @@ namespace Test_AITS.Migrations
                     b.HasIndex("ThanaId");
 
                     b.ToTable("Dealers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CompanyId = 1,
+                            DealerTypeId = 1,
+                            IsAMC = 0,
+                            IsBMC = 0,
+                            IsSIDC = 1,
+                            Name = "Company",
+                            ThanaId = 1
+                        });
                 });
 
             modelBuilder.Entity("Test_AITS.Models.DealerInfo", b =>
@@ -106,11 +214,17 @@ namespace Test_AITS.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("AssociateOf")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("DealerCode")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("DealerId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Designation")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("GBCommission")
                         .HasColumnType("int");
@@ -135,6 +249,22 @@ namespace Test_AITS.Migrations
                     b.HasIndex("DealerId");
 
                     b.ToTable("DealerInfos");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AssociateOf = "Company",
+                            DealerCode = "E-0001",
+                            DealerId = 1,
+                            Designation = "Company",
+                            GBCommission = 0,
+                            InboundCommission = 0,
+                            OrdinalCommission = 0,
+                            OutboundCommission = 0,
+                            SalesCommission = 0,
+                            SellAmount = 0
+                        });
                 });
 
             modelBuilder.Entity("Test_AITS.Models.DealerType", b =>
@@ -150,6 +280,23 @@ namespace Test_AITS.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DealerTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "SIDC"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "AMC"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "BMC"
+                        });
                 });
 
             modelBuilder.Entity("Test_AITS.Models.Sale", b =>
@@ -188,6 +335,86 @@ namespace Test_AITS.Migrations
                     b.ToTable("Sales");
                 });
 
+            modelBuilder.Entity("Test_AITS.Models.SalesCommission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Designation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<float>("Percentage")
+                        .HasColumnType("real");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SalesCommissions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Designation = "B",
+                            Percentage = 12.5f
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Designation = "C",
+                            Percentage = 15f
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Designation = "D",
+                            Percentage = 17.5f
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Designation = "E",
+                            Percentage = 20f
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Designation = "F",
+                            Percentage = 21f
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Designation = "G",
+                            Percentage = 22f
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Designation = "H",
+                            Percentage = 23f
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Designation = "I",
+                            Percentage = 24f
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Designation = "J",
+                            Percentage = 25f
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Designation = "K",
+                            Percentage = 26f
+                        });
+                });
+
             modelBuilder.Entity("Test_AITS.Models.Thana", b =>
                 {
                     b.Property<int>("Id")
@@ -201,6 +428,13 @@ namespace Test_AITS.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Thanas");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Thana-A"
+                        });
                 });
 
             modelBuilder.Entity("Test_AITS.Models.Dealer", b =>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +38,7 @@ namespace Test_AITS.Controllers
         {
             Dealer dealer = new Dealer();
             var name = Request.Form["name"];
+            var associateOf = Request.Form["associateOf"].ToString();
             var companyId = Request.Form["companyId"];
             var dealerTypeId = Request.Form["dealerTypeId"];
             var thanaId = Request.Form["thanaId"];
@@ -53,11 +55,14 @@ namespace Test_AITS.Controllers
             int dealerId = dealer.Id;
 
             DealerInfo dealerInfo = new DealerInfo();
-            dealerInfo.DealerCode = GetDealerCode(dealer.DealerTypeId,dealerId);
+            dealerInfo.DealerCode = GetDealerCode(dealer.DealerTypeId, dealerId);
             dealerInfo.DealerId = dealerId;
+            if (associateOf == "") dealerInfo.AssociateOf = "Company";
+            else dealerInfo.AssociateOf = associateOf;
+            dealerInfo.Designation = "A";
             db.DealerInfos.Add(dealerInfo);
             db.SaveChanges();
-            
+
 
 
             return Redirect("Index");
@@ -71,6 +76,7 @@ namespace Test_AITS.Controllers
             var companyId = Request.Form["cId"];
             var dealerTypeId = Convert.ToInt32(Request.Form["dTypeId"]);
             var thanaId = Request.Form["tId"];
+            var associateOf = Request.Form["associatorOf"];
 
             var data = db.Dealers.Find(Convert.ToInt32(dealerId));
             if (dealerTypeId == 1)
@@ -113,53 +119,145 @@ namespace Test_AITS.Controllers
 
 
 
-                DealerInfo dealerInfo = new DealerInfo();
-                dealerInfo.DealerCode = GetDealerCode(dealerTypeId, Convert.ToInt32(dealerId));
-                dealerInfo.DealerId = Convert.ToInt32(dealerId);
-                db.Dealers.Update(data);
-                db.DealerInfos.Add(dealerInfo);
-                db.SaveChanges();
-                return Redirect("Index");
+            DealerInfo dealerInfo = new DealerInfo();
+            dealerInfo.DealerCode = GetDealerCode(dealerTypeId, Convert.ToInt32(dealerId));
+            dealerInfo.DealerId = Convert.ToInt32(dealerId);
+            if (associateOf == "") dealerInfo.AssociateOf = "Company";
+            else dealerInfo.AssociateOf = associateOf;
+            dealerInfo.Designation = "A";
+            db.Dealers.Update(data);
+            db.DealerInfos.Add(dealerInfo);
+            db.SaveChanges();
+            return Redirect("Index");
         }
+
+        [HttpGet]
+        public IActionResult Details(string code)
+        {
+            dynamic dy = new ExpandoObject();
+            var dealerDetails = db.DealerInfos.Include(d => d.Dealer).FirstOrDefault(d => d.DealerCode == code);
+            var associates = db.DealerInfos.Where(d => d.AssociateOf == code);
+            var designation = associates.Select(d => d.Designation).Distinct();
+            Dictionary<string, string> data = new Dictionary<string, string>();
+            foreach (var item in designation)
+            {
+                data.Add(item, GetDesignatedEmployee(item, associates));
+            }
+            dy.dealer = dealerDetails;
+            dy.data = data.ToList();
+            dy.designation = designation.ToList();
+
+            return View(dy);
+        }
+
+        public string GetDesignatedEmployee(string item, IQueryable<DealerInfo> associates)
+        {
+            string str = null;
+            foreach (var a in associates)
+            {
+                if (a.Designation == item)
+                {
+                    str = str + a.DealerCode + ",";
+                }
+            }
+            return str;
+        }
+
         [HttpPost]
         public IActionResult Sell()
         {
+            List<SalesCommission> salesCommission = db.SalesCommissions.ToList();
             var dealerId = Convert.ToInt32(Request.Form["dealerId"]);
             var dealerCode = Request.Form["dealerCode"].ToString();
             var sellAmount = Convert.ToInt32(Request.Form["sellAmount"]);
             var date = Request.Form["date"];
-            var dealer = db.DealerInfos.FirstOrDefault(c=>c.DealerCode == dealerCode);
+            var dealer = db.DealerInfos.FirstOrDefault(c => c.DealerCode == dealerCode);
 
             DateTime dt = new DateTime();
             //string sellEntryTime = date;//+"-"+dt.ToString("hh:mm tt");
-            Dictionary <string,int> commision = CalculateCommission(dealerId,sellAmount);
+            Dictionary<string, float> commision = CalculateCommission(dealerId, sellAmount);
 
             Sale saleInfo = new Sale();
             saleInfo.DealerCode = dealerCode;
             saleInfo.SellAmount = sellAmount;
             saleInfo.Date = Convert.ToDateTime(date);
-            saleInfo.SalesCommission = commision["EmployeeCommission"];
-            saleInfo.InboundCommission = commision["AlphaCommission"];
-            saleInfo.OutboundCommission = commision["BetaCommission"];
-            saleInfo.OrdinalCommission = commision["AlphaCommission"]+commision["BetaCommission"];
-            saleInfo.GBCommission = commision["GBCommission"];
+            saleInfo.SalesCommission = (int)commision["EmployeeCommission"];
+            saleInfo.InboundCommission = (int)commision["AlphaCommission"];
+            saleInfo.OutboundCommission = (int)commision["BetaCommission"];
+            saleInfo.OrdinalCommission = (int)commision["AlphaCommission"] + (int)commision["BetaCommission"];
+            saleInfo.GBCommission = (int)commision["GBCommission"];
             db.Sales.Add(saleInfo);
 
 
-            dealer.SalesCommission += commision["EmployeeCommission"];
-            dealer.InboundCommission += commision["AlphaCommission"];
-            dealer.OutboundCommission += commision["BetaCommission"];
-            dealer.OrdinalCommission += commision["AlphaCommission"] + commision["BetaCommission"];
-            saleInfo.GBCommission = commision["GBCommission"];
+
+            dealer.SalesCommission += (int)commision["EmployeeCommission"];
+            dealer.InboundCommission += (int)commision["AlphaCommission"];
+            dealer.OutboundCommission += (int)commision["BetaCommission"];
+            dealer.OrdinalCommission += (int)commision["AlphaCommission"] + (int)commision["BetaCommission"];
+            saleInfo.GBCommission = (int)commision["GBCommission"];
             dealer.SellAmount += saleInfo.SellAmount;
             db.DealerInfos.Update(dealer);
 
-            db.SaveChanges(); 
+            db.SaveChanges();
+
+
+            SetAssociateCommission(saleInfo.Id, dealer.AssociateOf, commision["CommissionPercent"], saleInfo.Date, saleInfo.SellAmount, salesCommission);
 
 
             return Redirect("Index");
         }
 
+        private Boolean SetAssociateCommission(int s, string dealerCode, float v, DateTime date, int saleAmount, List<SalesCommission> salesCommission)
+        {
+            var dealer = db.DealerInfos.FirstOrDefault(d => d.DealerCode == dealerCode);
+            if (dealerCode == "Company" || dealer.Designation == "Company")
+            {
+                float rate = 26 - v;
+                AssociationCommission aCommission = new AssociationCommission();
+                aCommission.CommissionType = "Associates";
+                aCommission.SaleId = s;
+                aCommission.GoesTo = "Company";
+                aCommission.Amount = Convert.ToInt32((saleAmount * rate) / 100);
+                aCommission.Date = date;
+                db.AssociationCommissions.Add(aCommission);
+                db.SaveChanges();
+                return true;
+            }
+
+            else
+            {
+                //var dealerAssociate = db.DealerInfos.FirstOrDefault(d => d.DealerCode == dealer.AssociateOf);
+                if (dealer.SellAmount >= 4000)
+                {
+                    foreach (var item in salesCommission)
+                    {
+                        if (item.Designation == dealer.Designation)
+                        {
+                            float rate = item.Percentage - v;
+                            AssociationCommission aCommission = new AssociationCommission();
+                            aCommission.CommissionType = "Associates";
+                            aCommission.SaleId = s;
+                            aCommission.GoesTo = dealer.DealerCode;
+                            aCommission.Amount = Convert.ToInt32((saleAmount * rate) / 100);
+                            aCommission.Date = date;
+                            v = item.Percentage;
+                            db.AssociationCommissions.Add(aCommission);
+                            db.SaveChanges();
+                            break;
+
+                        }
+                    }
+                    return SetAssociateCommission(s, dealer.AssociateOf, v, date, saleAmount, salesCommission);
+                }
+                else
+                {
+                    return SetAssociateCommission(s, dealer.AssociateOf, v, date, saleAmount, salesCommission);
+                }
+
+
+            }
+
+        }
 
 
         public IActionResult Privacy()
@@ -196,6 +294,7 @@ namespace Test_AITS.Controllers
         {
             dynamic dy = new ExpandoObject();
             var data = db.Sales.Where(x => x.DealerCode == employeeCode);
+            var ordinalCommissionData = db.AssociationCommissions.Where(d => d.GoesTo == employeeCode);
             dy.Report = data;
             dy.totalSell = data.Sum(x => x.SellAmount);
             dy.TotalSalesCommission = data.Sum(x => x.SalesCommission);
@@ -209,7 +308,7 @@ namespace Test_AITS.Controllers
             return View("Search", dy);
         }
         [HttpPost]
-        public IActionResult SearchCommissionResulByDate(string fromDate,string toDate)
+        public IActionResult SearchCommissionResulByDate(string fromDate, string toDate)
         {
             //return Redirect("Index");
             dynamic dy = new ExpandoObject();
@@ -225,8 +324,8 @@ namespace Test_AITS.Controllers
 
             TempData["fromDate"] = fromDate;
             TempData["toDate"] = toDate;
-            return View("Search",dy);
-           
+            return View("Search", dy);
+
         }
         public string GetDealerCode(int id, int dealerId)
         {
@@ -235,20 +334,20 @@ namespace Test_AITS.Controllers
             {
                 string value = String.Format("{0:0000}", dealerId);
                 code = "E-" + value;
-                
+
 
             }
             else if (id == 2)
             {
                 string value = String.Format("{0:0000}", dealerId);
                 code = "AL-" + value;
-                
+
             }
             else
             {
                 string value = String.Format("{0:0000}", dealerId);
                 code = "BL-" + value;
-                
+
             }
             return code;
         }
@@ -259,30 +358,47 @@ namespace Test_AITS.Controllers
         }
         public JsonResult GetDealerInfo(string code)
         {
-            var data = db.DealerInfos.Include(d=>d.Dealer).Where(c => c.DealerCode ==code);
-            
-            if (data!=null)
+            var data = db.DealerInfos.Include(d => d.Dealer).Where(c => c.DealerCode == code);
+
+            if (data != null)
             {
                 return Json(data);
             }
-            return Json("False");
+            return Json(data);
         }
 
-        private Dictionary<string, int> CalculateCommission(int dealerId, int sellAmount)
+        private Dictionary<string, float> CalculateCommission(int dealerId, int sellAmount)
         {
-            Dictionary<string, int> data = new Dictionary<string, int>();
-            var dealer = db.Dealers.Find(dealerId);
+            Dictionary<string, float> data = new Dictionary<string, float>();
+            var dealerInfo = db.DealerInfos.Include(d => d.Dealer).FirstOrDefault(c => c.DealerId == dealerId);
             List<Commission> commision = db.Commissions.ToList();
-            if(dealer.IsSIDC == 1)
+            List<SalesCommission> salesCommission = db.SalesCommissions.ToList();
+            if (dealerInfo.Dealer.IsSIDC == 1)
             {
-                foreach (var item in commision)
+                if (dealerInfo.Designation == "A")
                 {
-                    if(item.Type == "SIDC")
+                    foreach (var item in commision)
                     {
-                        if (sellAmount >= item.FromAmount && sellAmount < item.ToAmount)
+                        if (item.Type == "SIDC")
+                        {
+                            if (sellAmount >= item.FromAmount && sellAmount < item.ToAmount)
+                            {
+                                float comEmployee = (sellAmount * item.Percentage) / 100;
+                                data.Add("EmployeeCommission", Convert.ToInt32(comEmployee));
+                                data.Add("CommissionPercent", Convert.ToInt32(item.Percentage));
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var item in salesCommission)
+                    {
+                        if (item.Designation == dealerInfo.Designation)
                         {
                             float comEmployee = (sellAmount * item.Percentage) / 100;
-                            data.Add("EmployeeCommission",Convert.ToInt32(comEmployee));
+                            data.Add("EmployeeCommission", Convert.ToInt32(comEmployee));
+                            data.Add("CommissionPercent", Convert.ToInt32(item.Percentage));
                         }
                     }
                 }
@@ -291,7 +407,7 @@ namespace Test_AITS.Controllers
             {
                 data.Add("EmployeeCommission", 0);
             }
-            if (dealer.IsAMC == 1)
+            if (dealerInfo.Dealer.IsAMC == 1)
             {
                 foreach (var item in commision)
                 {
@@ -309,7 +425,7 @@ namespace Test_AITS.Controllers
             {
                 data.Add("AlphaCommission", 0);
             }
-            if (dealer.IsBMC == 1)
+            if (dealerInfo.Dealer.IsBMC == 1)
             {
                 foreach (var item in commision)
                 {
@@ -329,6 +445,103 @@ namespace Test_AITS.Controllers
             }
             data.Add("GBCommission", 0);
             return data;
+        }
+
+        [HttpPost]
+        public IActionResult PostOrdinalCommission()
+        {
+            string month = DateTime.Now.Month.ToString();
+            string year = DateTime.Now.Year.ToString();
+
+            string currentMonthDays = DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month).ToString();
+            DateTime fromDate = Convert.ToDateTime(month + "-" + "01-" + year);
+            DateTime toDate = Convert.ToDateTime(month + "-" + currentMonthDays + "-" + year);
+
+            var results = db.Sales
+                            .Where(d => d.Date >= fromDate && d.Date <= toDate)
+                            .Where(c => c.DealerCode.Contains("AL") || c.DealerCode.Contains("BL"));
+            int total = results.Sum(x => x.SellAmount);
+            DistributeOrdinalCommission(total);
+            return Redirect("Index");
+        }
+
+        private void DistributeOrdinalCommission(int total)
+        {
+            List<DealerInfo> dealers = db.DealerInfos.ToList();
+            foreach (var item in dealers)
+            {
+                if (item.Designation == "Company" || item.Designation == "A" || item.Designation == "B")
+                {
+                    continue;
+                }
+                else
+                {
+                    int amount = GetAmountWithDesignation(total, item);
+                    if (amount != 0)
+                    {
+                        AssociationCommission aCommission = new AssociationCommission();
+                        aCommission.SaleId = 0;
+                        aCommission.CommissionType = "Ordinal";
+                        aCommission.GoesTo = item.DealerCode;
+                        aCommission.Date = DateTime.Now;
+                        aCommission.Amount = amount;
+                        db.SaveChanges();
+                    }
+                }
+            }
+        }
+        public int GetAmountWithDesignation(int total, DealerInfo item)
+        {
+            if (item.Designation == "C" && item.SellAmount >= 20000)
+            {
+                int amount = (int)((total * 1.5) / 100);
+                return amount;
+            }
+            else if (item.Designation == "D" && item.SellAmount >= 30000)
+            {
+                int amount = (int)((total * 0.5) / 100);
+                return amount;
+            }
+            else if (item.Designation == "E" && item.SellAmount >= 70000)
+            {
+                int amount = (int)((total * 6.5) / 100);
+                return amount;
+            }
+            else if (item.Designation == "F")
+            {
+                int amount = (int)((total * 1.5) / 100);
+                return amount;
+            }
+            else if (item.Designation == "G")
+            {
+                int amount = (int)((total * 1.5) / 100);
+                return amount;
+            }
+            else if (item.Designation == "H")
+            {
+                int amount = (int)((total * 2.5) / 100);
+                return amount;
+            }
+            else if (item.Designation == "I")
+            {
+                int amount = (int)((total * 1.0) / 100);
+                return amount;
+            }
+            else if (item.Designation == "J")
+            {
+                int amount = (int)((total * 0.5) / 100);
+                return amount;
+            }
+            else if (item.Designation == "K")
+            {
+                int amount = (int)((total * 1.0) / 100);
+                return amount;
+            }
+            else
+            {
+                return 0;
+            }
+
         }
     }
 }

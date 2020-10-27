@@ -100,12 +100,62 @@
                         <td>@dealerInfo.Dealer.Company.Name</td>
                         <td>@dealerInfo.Dealer.Thana.Name</td>
                         <td>@dealerInfo.SellAmount</td>
-                        <td><button data-id="@dealerInfo.DealerCode+@dealerInfo.Dealer.Name+@dealerInfo.Dealer.Id" class="btn btn-md btn-info getinfo">Sell</button></td>
+                        <td>
+                            <button data-id="@dealerInfo.DealerCode+@dealerInfo.Dealer.Name+@dealerInfo.Dealer.Id" class="btn btn-md btn-info getinfo">Sell</button>
+                            <a href="@Url.Action("Details","Home",new {code = dealerInfo.DealerCode })" class="btn btn-success">Details</a>
+                        </td>
+
                     </tr>
                 }
-                
+
             </tbody>
         </table>
+        <!-- Button to Open the Modal -->
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#gbCommissionModal">
+            Post Ordinal Commission
+        </button>
+
+        <!-- The Modal -->
+        <div class="modal fade" id="gbCommissionModal">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Calculate Ordinal Commission</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        @{ 
+                            string currrentMonth = DateTime.Now.ToString("MMMM");
+                            string currrentYear = DateTime.Now.Year.ToString();
+                        }
+                        Are you sure you want to run this process ?
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Month</span>
+                            </div>
+                            <input type="text" aria-label="month" class="form-control" value="@currrentMonth" readonly>
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Year</span>
+                            </div>
+                            <input type="text" aria-label="year" class="form-control" value="@currrentYear" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <form asp-action="PostOrdinalCommission" method="post">
+                            <button type="submit" class="btn btn-success">Yes</button>
+                        </form>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     </div>
     <div class="col-lg-4">
         <div id="formDiv">
@@ -130,6 +180,15 @@
                         <div class="form-group">
                             <label for="name">Name:</label>
                             <input type="text" class="form-control" id="name" placeholder="Enter name" name="name">
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="introducer">
+                            <label class="form-check-label" for="introducer">Introducer</label>
+                        </div>
+                        <div class="form-group" id="associateDiv" style="display:none">
+                            <label for="associateof">Associator:</label>
+                            <input type="text" class="form-control" placeholder="Enter the Introducer" name="associateOf" id="associateOf" oninput="this.value = this.value.toUpperCase()">
+                            <span id="info"></span>
                         </div>
                         <div class="form-group">
                             <label for="dealerType">Dealer Type:</label>
@@ -172,7 +231,7 @@
                     <br>
                     <form asp-action="CreateExistingMember" method="post">
                         <div class="input-group mb-3">
-                            <input type="text" class="form-control" name="dCode" id="dCode" placeholder="Enter Employee Code " aria-label="Recipient's username" aria-describedby="button-addon2" oninput="this.value = this.value.toUpperCase()">
+                            <input type="text" class="form-control" name="dCode" id="dCode" placeholder="Enter Employee Code " aria-label="Enter Employee Code" aria-describedby="button-addon2" oninput="this.value = this.value.toUpperCase()">
                             <div class="input-group-append">
                                 <button class="btn btn-outline-success" type="button" id="searchDealer">Search</button>
                             </div>
@@ -181,6 +240,15 @@
                         <div class="form-group">
                             <label for="dname">Member Name:</label>
                             <input type="text" class="form-control" id="dname" name="dname" readonly>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="haveIntroducer">
+                            <label class="form-check-label" for="haveIntroducer">Introducer</label>
+                        </div>
+                        <div class="form-group" id="associatorDiv" style="display:none">
+                            <label for="associatorOf">Associator:</label>
+                            <input type="text" class="form-control" placeholder="Enter the Introducer" name="associatorOf" id="associatorOf" oninput="this.value = this.value.toUpperCase()">
+                            <span id="infor"></span>
                         </div>
                         <div class="form-group">
                             <label for="dType">Dealer Type:</label>

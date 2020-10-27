@@ -96,7 +96,56 @@
                     $("#dId").val('');
                     $("#dname").val('');
                 }
-            })
+            });
+
+            $("#associateOf").change(function () {
+                var dCode = $(this).val();
+                var params = { code: dCode };
+                $.ajax({
+                    url: "/Home/GetDealerInfo",
+                    type: "POST",
+                    data: params,
+                    success: function (rData) {
+                        if (rData != undefined && rData != null && rData != "") {
+                            $("#info").text(rData[0].dealer.name);
+                        }
+                        else {
+                            $("#info").text("no data found");
+                        }
+                    }
+
+                });
+            });
+            $("#associatorOf").change(function () {
+                var dCode = $(this).val();
+                var params = { code: dCode };
+                $.ajax({
+                    url: "/Home/GetDealerInfo",
+                    type: "POST",
+                    data: params,
+                    success: function (rData) {
+                        if (rData != undefined && rData != null && rData != "") {
+                            $("#infor").text(rData[0].dealer.name);
+                        }
+                        else {
+                            $("#infor").text("no data found");
+                        }
+                    }
+
+                });
+            });
+            $("#introducer").click(function () {
+                var data = $(this).is(':checked');
+                if (data === true) $("#associateDiv").show();
+                else $("#associateDiv").hide();
+            });
+
+            $("#haveIntroducer").click(function () {
+                var data = $(this).is(':checked');
+                if (data === true) $("#associatorDiv").show();
+                else $("#associatorDiv").hide();
+            });
+
         });
     </script>
     <!--script>
